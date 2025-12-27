@@ -1,3 +1,54 @@
+# DGX Spark compatible version of TRELLIS.2
+
+This is a fork of MICROSOFT/TRELLIS.2 with changes to make it work correctly on DGX OS devices (like the DGX Spark).
+
+## Installation instructions:
+
+Request access to these HuggingFace repositories (you might as well do this now since approval can take a while):
+* https://huggingface.co/facebook/dinov3-vitl16-pretrain-lvd1689m
+* https://huggingface.co/briaai/RMBG-2.0
+
+Make sure a version of _conda_ is installed:
+```
+wget https://repo.anaconda.com/miniconda/Miniconda3-latest-Linux-aarch64.sh
+chmod u+x Miniconda3-latest-Linux-aarch64.sh
+./Miniconda3-latest-Linux-aarch64.sh
+```
+
+After installing _conda_ restart your _bash_ or _ssh_ session. If miniconda was installed successfully, it will automatically load the 'base' environment by default. If you want to disable this behaviour, run:
+```
+conda config --set auto_activate_base false
+```
+
+Now check out the repository with submodules, and switch to that directory:
+```
+git clone --recurse https://github.com/raziel2001au/dgx-trellis2.git trellis2
+cd trellis2
+```
+
+Now run the included setup.sh script (it is based on the original, but heavily modified, including support for DGX Spark):
+```
+./setup.sh --new-env --basic --flash-attn --nvdiffrast --nvdiffrec --cumesh --o-voxel --flexgemm
+```
+
+Log in to your HuggingFace account (as it needs to download the models you requested access to earlier):
+```
+conda activate trellis2
+hf auth login
+conda deactivate
+```
+
+Start the Gradio web app:
+```
+./start.sh
+```
+
+NOTE: This repository DOES NOT support AMD GPUs, use the original repository for anything other than NVIDIA hardware.
+
+
+
+## Original documentation below this point:
+
 ![](assets/teaser.webp)
 
 # Native and Compact Structured Latents for 3D Generation
