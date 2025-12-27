@@ -26,7 +26,7 @@ git clone --recurse https://github.com/raziel2001au/dgx-trellis2.git trellis2
 cd trellis2
 ```
 
-Now run the included setup.sh script (it is based on the original, but heavily modified, including support for DGX Spark):
+Now run the included *setup.sh* script (it is based on the original, but heavily modified, including support for DGX Spark). Do note that it compiles flash-attention from source, which takes a long time and consumes a lot of RAM, make sure nothing else is running on the DGX Spark for the setup to succeed:
 ```
 ./setup.sh --new-env --basic --flash-attn --nvdiffrast --nvdiffrec --cumesh --o-voxel --flexgemm
 ```
@@ -38,7 +38,7 @@ hf auth login
 conda deactivate
 ```
 
-Start the Gradio web app:
+Start the Gradio web app (which will also download the required models):
 ```
 ./start.sh
 ```
