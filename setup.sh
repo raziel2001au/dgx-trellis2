@@ -44,96 +44,71 @@ if [ "$HELP" = true ] ; then
     echo "Usage: setup.sh [OPTIONS]"
     echo "Options:"
     echo "  -h, --help              Display this help message"
-    echo "  --new-env               Create a new conda environment"
+    echo "  --new-env               Create new conda environment and install PyTorch"
     echo "  --basic                 Install basic dependencies"
-    echo "  --flash-attn            Install flash-attention"
+    echo "  --flash-attn            Install flash-attention (this takes a long time)"
     echo "  --cumesh                Install cumesh"
     echo "  --o-voxel               Install o-voxel"
     echo "  --flexgemm              Install flexgemm"
     echo "  --nvdiffrast            Install nvdiffrast"
     echo "  --nvdiffrec             Install nvdiffrec"
-    return
+    echo
+    echo "To install everything: ./setup.sh --new-env --basic --flash-attn --nvdiffrast --nvdiffrec --cumesh --o-voxel --flexgemm"
+    exit 0
 fi
 
 # Get system information
 WORKDIR=$(pwd)
 if command -v nvidia-smi > /dev/null; then
     PLATFORM="cuda"
-elif command -v rocminfo > /dev/null; then
-    PLATFORM="hip"
 else
     echo "Error: No supported GPU found"
     exit 1
 fi
 
+# Install system dependencies
+echo "We need to install libjpeg-dev via apt. You will likely be prompted for your password."
+sudo apt install -y libjpeg-dev
+
 if [ "$NEW_ENV" = true ] ; then
-    conda create -n trellis2 python=3.10
-    conda activate trellis2
-    if [ "$PLATFORM" = "cuda" ] ; then
-        pip install torch==2.6.0 torchvision==0.21.0 --index-url https://download.pytorch.org/whl/cu124
-    elif [ "$PLATFORM" = "hip" ] ; then
-        pip install torch==2.6.0 torchvision==0.21.0 --index-url https://download.pytorch.org/whl/rocm6.2.4
-    fi
+    # Check that conda is installed
+    command -v conda >/dev/null 2>&1 || {
+        echo "Error: conda is not installed or not on PATH" >&2
+        exit 1
+    }
+
+    # Activate conda in the shell
+    eval "$(conda shell.bash hook)"
+
+    # Create and activate the new conda environment
+    conda create -n trellis2 python=3.13 && conda activate trellis2
+    source scripts/install_torch.sh
 fi
 
 if [ "$BASIC" = true ] ; then
-    pip install imageio imageio-ffmpeg tqdm easydict opencv-python-headless ninja trimesh transformers gradio==6.0.1 tensorboard pandas lpips zstandard
-    pip install git+https://github.com/EasternJournalist/utils3d.git@9a4eb15e4021b67b12c460c7057d642626897ec8
-    sudo apt install -y libjpeg-dev
-    pip install pillow-simd
-    pip install kornia timm
+    source scripts/install_basic_dependencies.sh
 fi
 
 if [ "$FLASHATTN" = true ] ; then
-    if [ "$PLATFORM" = "cuda" ] ; then
-        pip install flash-attn==2.7.3
-    elif [ "$PLATFORM" = "hip" ] ; then
-        echo "[FLASHATTN] Prebuilt binaries not found. Building from source..."
-        mkdir -p /tmp/extensions
-        git clone --recursive https://github.com/ROCm/flash-attention.git /tmp/extensions/flash-attention
-        cd /tmp/extensions/flash-attention
-        git checkout tags/v2.7.3-cktile
-        GPU_ARCHS=gfx942 python setup.py install #MI300 series
-        cd $WORKDIR
-    else
-        echo "[FLASHATTN] Unsupported platform: $PLATFORM"
-    fi
+    source scripts/install_flash_attention.sh
 fi
 
 if [ "$NVDIFFRAST" = true ] ; then
-    if [ "$PLATFORM" = "cuda" ] ; then
-        mkdir -p /tmp/extensions
-        git clone -b v0.4.0 https://github.com/NVlabs/nvdiffrast.git /tmp/extensions/nvdiffrast
-        pip install /tmp/extensions/nvdiffrast --no-build-isolation
-    else
-        echo "[NVDIFFRAST] Unsupported platform: $PLATFORM"
-    fi
+    source scripts/install_nvdiffrast.sh
 fi
 
 if [ "$NVDIFFREC" = true ] ; then
-    if [ "$PLATFORM" = "cuda" ] ; then
-        mkdir -p /tmp/extensions
-        git clone -b renderutils https://github.com/JeffreyXiang/nvdiffrec.git /tmp/extensions/nvdiffrec
-        pip install /tmp/extensions/nvdiffrec --no-build-isolation
-    else
-        echo "[NVDIFFREC] Unsupported platform: $PLATFORM"
-    fi
+    source scripts/install_nvdiffrec.sh
 fi
 
 if [ "$CUMESH" = true ] ; then
-    mkdir -p /tmp/extensions
-    git clone https://github.com/JeffreyXiang/CuMesh.git /tmp/extensions/CuMesh --recursive
-    pip install /tmp/extensions/CuMesh --no-build-isolation
+    source scripts/install_cumesh.sh
 fi
 
 if [ "$FLEXGEMM" = true ] ; then
-    mkdir -p /tmp/extensions
-    git clone https://github.com/JeffreyXiang/FlexGEMM.git /tmp/extensions/FlexGEMM --recursive
-    pip install /tmp/extensions/FlexGEMM --no-build-isolation
+    source scripts/install_flex_gemm.sh
 fi
 
 if [ "$OVOXEL" = true ] ; then
-    mkdir -p /tmp/extensions
-    cp -r o-voxel /tmp/extensions/o-voxel
-    pip install /tmp/extensions/o-voxel --no-build-isolation
+    source scripts/install_o_voxel.sh
 fi
