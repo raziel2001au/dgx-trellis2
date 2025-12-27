@@ -58,9 +58,8 @@ if [ "$HELP" = true ] ; then
 fi
 
 # Get system information
-WORKDIR=$(pwd)
 if command -v nvidia-smi > /dev/null; then
-    PLATFORM="cuda"
+    echo "NVIDIA GPU detected, proceeding with setup"
 else
     echo "Error: No supported GPU found"
     exit 1
