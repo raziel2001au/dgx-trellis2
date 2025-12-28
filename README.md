@@ -15,7 +15,7 @@ chmod u+x Miniconda3-latest-Linux-aarch64.sh
 ./Miniconda3-latest-Linux-aarch64.sh
 ```
 
-After installing _conda_ restart your _bash_ or _ssh_ session. If miniconda was installed successfully, it will automatically load the 'base' environment by default. If you want to disable this behaviour, run:
+After installing _conda_ restart your _bash_ or _ssh_ session. If conda was installed successfully, it will automatically load the 'base' environment by default. If you want to disable this behaviour, run:
 ```
 conda config --set auto_activate_base false
 ```
@@ -26,19 +26,12 @@ git clone --recurse https://github.com/raziel2001au/dgx-trellis2.git trellis2
 cd trellis2
 ```
 
-Now run the included *setup.sh* script (it is based on the original, but heavily modified, including support for DGX Spark). Do note that it compiles flash-attention from source, which takes a long time and consumes a lot of RAM, make sure nothing else is running on the DGX Spark for the setup to succeed:
+Now run the included *setup.sh* script (it is based on the original, but heavily modified, including support for DGX Spark). Do note that it compiles flash-attention from source, which takes a long time and consume a lot of RAM, so make sure nothing else is running on the DGX Spark for the setup to succeed:
 ```
 ./setup.sh --new-env --basic --flash-attn --nvdiffrast --nvdiffrec --cumesh --o-voxel --flexgemm
 ```
 
-Log in to your HuggingFace account (as it needs to download the models you requested access to earlier):
-```
-conda activate trellis2
-hf auth login
-conda deactivate
-```
-
-Start the Gradio web app (which will also download the required models):
+Start the Gradio web app (which will also prompt you the first time for your HuggingFace login token so it can download the models you requested access to):
 ```
 ./start.sh
 ```
